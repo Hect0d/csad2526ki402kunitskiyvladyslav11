@@ -1,0 +1,426 @@
+Prompt: Create a simple C++ header declaring a function int add(int a, int b);
+ Implement the add(int a, int b) function declared in math_operations.h
+
+Copilot:
+```cpp name=math_operations.h
+#ifndef MATH_OPERATIONS_H
+#define MATH_OPERATIONS_H
+
+// Declares a simple function that returns the sum of two integers.
+int add(int a, int b);
+
+#endif // MATH_OPERATIONS_H
+```
+
+```cpp name=math_operations.cpp
+#include "math_operations.h"
+
+// Implements the add function declared in math_operations.h
+int add(int a, int b) {
+    return a + b;
+}
+```
+
+I created math_operations.h with the declaration of int add(int a, int b) and implemented it in math_operations.cpp. To compile and test quickly:
+
+- Compile: g++ -c math_operations.cpp
+- Link into a program that uses add, or compile together: g++ math_operations.cpp main.cpp -o myprogram
+
+Let me know if you want a small main.cpp test file or unit tests added.
+
+
+
+Prompt: Create GoogleTest unit tests for the add(int a, int b) function  
+unit_test.cpp
+
+Copilot:
+
+```cpp
+#ifndef MATH_OPERATIONS_H
+#define MATH_OPERATIONS_H
+
+// Declares a simple function that returns the sum of two integers.
+int add(int a, int b);
+
+#endif // MATH_OPERATIONS_H
+```
+
+```cpp
+#include "math_operations.h"
+#include <gtest/gtest.h>
+#include <climits>
+
+// Basic correctness
+TEST(AddTest, PositiveNumbers) {
+    EXPECT_EQ(add(2, 3), 5);
+}
+
+TEST(AddTest, NegativeNumbers) {
+    EXPECT_EQ(add(-2, -3), -5);
+}
+
+TEST(AddTest, MixedSign) {
+    EXPECT_EQ(add(-5, 5), 0);
+    EXPECT_EQ(add(7, 0), 7);
+}
+
+TEST(AddTest, Zero) {
+    EXPECT_EQ(add(0, 0), 0);
+}
+
+// Property: commutativity
+TEST(AddTest, Commutative) {
+    int a = 123;
+    int b = -456;
+    EXPECT_EQ(add(a, b), add(b, a));
+}
+
+// Edge values within safe range (avoid signed overflow)
+TEST(AddTest, LargeValues) {
+    EXPECT_EQ(add(INT_MAX - 1, 1), INT_MAX);
+    EXPECT_EQ(add(INT_MIN, 0), INT_MIN);
+}
+
+int main(int argc, char **argv) {
+    ::testing::InitGoogleTest(&argc, argv);
+    return RUN_ALL_TESTS();
+}
+```
+
+```cpp name=unit_test.cpp
+#include <gtest/gtest.h>
+
+// Include the implementation directly so this single translation unit can be
+// compiled without separately linking math_operations.cpp.
+// You can change the path to match your layout (e.g. "../math_operations.cpp").
+#include "math_operations.cpp"
+
+#include <climits>
+#include <iostream>
+
+// Basic correctness
+TEST(AddTest, PositiveNumbers) {
+    EXPECT_EQ(add(2, 3), 5);
+}
+
+TEST(AddTest, NegativeNumbers) {
+    EXPECT_EQ(add(-2, -3), -5);
+}
+
+TEST(AddTest, MixedSign) {
+    EXPECT_EQ(add(-5, 5), 0);
+    EXPECT_EQ(add(7, 0), 7);
+}
+
+TEST(AddTest, Zero) {
+    EXPECT_EQ(add(0, 0), 0);
+}
+
+// Property: commutativity
+TEST(AddTest, Commutative) {
+    int a = 123;
+    int b = -456;
+    EXPECT_EQ(add(a, b), add(b, a));
+}
+
+// Edge values within safe range (avoid signed overflow)
+TEST(AddTest, LargeValues) {
+    EXPECT_EQ(add(INT_MAX - 1, 1), INT_MAX);
+    EXPECT_EQ(add(INT_MIN, 0), INT_MIN);
+}
+
+// Small additional checks
+TEST(AddTest, Identity) {
+    EXPECT_EQ(add(0, 42), 42);
+    EXPECT_EQ(add(42, 0), 42);
+}
+
+int main(int argc, char** argv) {
+    ::testing::InitGoogleTest(&argc, argv);
+    int result = RUN_ALL_TESTS();
+    std::cout << "Press Enter to exit..." << std::endl;
+    std::cin.get(); // Wait for Enter before closing the console
+    return result;
+}
+```
+
+What I did: I provided the math_operations.h snippet and your original unit_test.cpp snippet (as requested), then created a unit_test.cpp that follows the "include the .cpp directly" pattern you showed and adds the "Press Enter to exit..." pause. This single-file approach makes it easy to compile and run quickly.
+
+How to build and run:
+- If you keep the direct include ("#include \"math_operations.cpp\""), compile:
+  g++ unit_test.cpp -lgtest -pthread -o unit_test
+  ./unit_test
+- Alternatively, the more typical approach is to include math_operations.h in the test and compile/link math_operations.cpp separately:
+  g++ unit_test.cpp math_operations.cpp -lgtest -pthread -o unit_test
+  ./unit_test
+
+If you'd prefer the version that includes only math_operations.h (and links the .cpp separately) or a CMakeLists.txt for building the tests, I can provide that next.
+
+Prompt:# Generate a basic CMakeLists.txt for a C++ project with a main.cpp file that builds a "main" executable. | # Add math_operations module | # Add unit test
+
+Copilot:
+```cpp
+#include <gtest/gtest.h>
+
+// Include the implementation directly so this single translation unit can be
+// compiled without separately linking math_operations.cpp.
+// You can change the path to match your layout (e.g. "../math_operations.cpp").
+#include "math_operations.cpp"
+
+#include <climits>
+#include <iostream>
+
+// Basic correctness
+TEST(AddTest, PositiveNumbers) {
+    EXPECT_EQ(add(2, 3), 5);
+}
+
+TEST(AddTest, NegativeNumbers) {
+    EXPECT_EQ(add(-2, -3), -5);
+}
+
+TEST(AddTest, MixedSign) {
+    EXPECT_EQ(add(-5, 5), 0);
+    EXPECT_EQ(add(7, 0), 7);
+}
+
+TEST(AddTest, Zero) {
+    EXPECT_EQ(add(0, 0), 0);
+}
+
+// Property: commutativity
+TEST(AddTest, Commutative) {
+    int a = 123;
+    int b = -456;
+    EXPECT_EQ(add(a, b), add(b, a));
+}
+
+// Edge values within safe range (avoid signed overflow)
+TEST(AddTest, LargeValues) {
+    EXPECT_EQ(add(INT_MAX - 1, 1), INT_MAX);
+    EXPECT_EQ(add(INT_MIN, 0), INT_MIN);
+}
+
+// Small additional checks
+TEST(AddTest, Identity) {
+    EXPECT_EQ(add(0, 42), 42);
+    EXPECT_EQ(add(42, 0), 42);
+}
+
+int main(int argc, char** argv) {
+    ::testing::InitGoogleTest(&argc, argv);
+    int result = RUN_ALL_TESTS();
+    std::cout << "Press Enter to exit..." << std::endl;
+    std::cin.get(); // Wait for Enter before closing the console
+    return result;
+}
+```
+
+```cmake name=CMakeLists.txt
+cmake_minimum_required(VERSION 3.14)
+project(MyProject VERSION 1.0 LANGUAGES CXX)
+
+# Build settings
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+
+# ---- math_operations module ----
+# Assumes math_operations.cpp and math_operations.h are in the project root.
+add_library(math_operations STATIC
+    math_operations.cpp
+    math_operations.h
+)
+target_include_directories(math_operations
+    PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}
+)
+
+# ---- main executable ----
+# Builds an executable named "main" from main.cpp and links math_operations.
+add_executable(main
+    main.cpp
+)
+target_link_libraries(main
+    PRIVATE math_operations
+)
+
+# ---- Unit test ----
+# This project uses GoogleTest via FetchContent to avoid requiring it preinstalled.
+include(FetchContent)
+FetchContent_Declare(
+  googletest
+  URL https://github.com/google/googletest/archive/refs/tags/release-1.12.1.zip
+)
+# For Windows: Prevent overriding the parent project's compiler/linker settings
+set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
+FetchContent_MakeAvailable(googletest)
+
+enable_testing()
+
+# Note: Many test files include the implementation directly (e.g. '#include "math_operations.cpp"').
+# If your unit_test.cpp does that, do NOT also link math_operations here to avoid duplicate symbols.
+# If your tests only include the header, you can set LINK_MATH_LIB_TO_TEST to ON to link the library.
+option(LINK_MATH_LIB_TO_TEST "Link math_operations library into unit_test instead of relying on unit_test to include the implementation" OFF)
+
+add_executable(unit_test
+    unit_test.cpp
+)
+
+if(LINK_MATH_LIB_TO_TEST)
+    target_link_libraries(unit_test
+        PRIVATE
+        gtest_main
+        math_operations
+    )
+else()
+    target_link_libraries(unit_test
+        PRIVATE
+        gtest_main
+    )
+endif()
+
+target_include_directories(unit_test
+    PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}
+)
+
+# Register the test with CTest
+add_test(NAME unit_test COMMAND unit_test)
+
+# Optional: integrate GoogleTest's helper if present
+include(GoogleTest OPTIONAL)
+if(TARGET gtest_main)
+    gtest_discover_tests(unit_test)
+endif()
+```
+
+I created a basic CMakeLists.txt that:
+- Defines a math_operations static library from math_operations.cpp/.h.
+- Builds the "main" executable from main.cpp and links it with math_operations.
+- Sets up a unit_test target that uses GoogleTest (fetched with FetchContent).
+  - By default the unit_test target is not linked to the math_operations library to avoid duplicate-definition problems if your unit_test.cpp includes math_operations.cpp directly (as shown in the snippet above). If you prefer to link the library instead, set the CMake option LINK_MATH_LIB_TO_TEST=ON.
+
+How to build and run:
+- Configure and build:
+  - cmake -S . -B build
+  - cmake --build build --config Release
+- Run the main executable:
+  - ./build/main
+- Run tests:
+  - ctest --test-dir build    (or) ./build/unit_test
+
+What's next: if you want, I can add a CMake option to control the C++ standard, add installation rules, or provide an example main.cpp and adjust the path assumptions (e.g., subdirectories for src/ and tests/).
+
+Prompt:Add instructions for creating a test
+executable file and running tests for Readme
+
+
+Copilot:
+````markdown name=README.md
+# MyProject
+
+This project demonstrates a small C++ library (`math_operations`) with a `main` executable and GoogleTest-based unit tests.
+
+Below are concise instructions for creating a test executable file and running the tests using the provided `CMakeLists.txt`.
+
+Prerequisites
+- CMake >= 3.14
+- A C++ compiler supporting C++17
+- Internet access (the CMake file uses FetchContent to download GoogleTest)
+
+Quick build and run (default)
+1. Create a build directory and configure:
+   ```
+   mkdir build
+   cmake -S . -B build
+   ```
+2. Build the project and tests:
+   ```
+   cmake --build build --config Release
+   ```
+3. Run tests with CTest (recommended):
+   ```
+   ctest --test-dir build --verbose
+   ```
+   Or run the test binary directly:
+   ```
+   ./build/unit_test
+   ```
+
+Creating a test executable file (unit_test.cpp)
+- Option A — Include the implementation directly inside the test translation unit
+
+  If your `unit_test.cpp` includes the implementation file (for example `#include "math_operations.cpp"`), place `unit_test.cpp` in the project root and use the following minimal example:
+
+  ```cpp
+  #include <gtest/gtest.h>
+  #include "math_operations.cpp" // includes implementation directly
+
+  TEST(AddTest, Basic) {
+      EXPECT_EQ(add(2,3), 5);
+  }
+
+  int main(int argc, char** argv) {
+      ::testing::InitGoogleTest(&argc, argv);
+      return RUN_ALL_TESTS();
+  }
+  ```
+
+  Notes:
+  - Do NOT link `math_operations` library into the test target in CMake if you use this pattern, otherwise you'll get duplicate symbol/linker errors.
+  - This can be convenient for small projects or one-file tests.
+
+- Option B — Include the header and link the math library
+
+  A more typical approach is to include the public header and link the `math_operations` library that is built by CMake:
+
+  ```cpp
+  #include "math_operations.h"
+  #include <gtest/gtest.h>
+
+  TEST(AddTest, Basic) {
+      EXPECT_EQ(add(2,3), 5);
+  }
+
+  int main(int argc, char** argv) {
+      ::testing::InitGoogleTest(&argc, argv);
+      return RUN_ALL_TESTS();
+  }
+  ```
+
+  In this case you should tell CMake to link the `math_operations` library into the `unit_test` target. The supplied `CMakeLists.txt` contains an option to control this:
+  - To link the library, configure with:
+    ```
+    cmake -S . -B build -DLINK_MATH_LIB_TO_TEST=ON
+    ```
+  - Then build:
+    ```
+    cmake --build build --config Release
+    ```
+
+How the supplied CMake setup works
+- `math_operations` is defined as a static library target.
+- `main` executable is built from `main.cpp` and links `math_operations`.
+- `unit_test` is created as a test target. By default, `LINK_MATH_LIB_TO_TEST` is OFF to avoid duplicate symbols if tests include `math_operations.cpp` directly. Set `-DLINK_MATH_LIB_TO_TEST=ON` when your tests only include the header and you want the library linked.
+
+Running tests (summary)
+- Build:
+  ```
+  cmake -S . -B build
+  cmake --build build --config Release
+  ```
+- Run all tests:
+  ```
+  ctest --test-dir build --verbose
+  ```
+  or run the test executable:
+  ```
+  ./build/unit_test
+  ```
+
+Tips
+- If your test binary waits for user input (e.g., `std::cin.get()` used to pause), tests run non-interactively via `ctest` may hang. Remove or #ifdef-guard pause code for automated runs.
+- Use `-DLINK_MATH_LIB_TO_TEST=ON` when your tests only include headers and you want the test target to link against `math_operations`. Leave it OFF if your tests include the `.cpp` implementation directly.
+
+What I did: I added step-by-step instructions showing both ways to create a test executable (include implementation vs link library), the exact CMake option to toggle linking, and the commands to configure, build, and run the tests.
+
+What's next: If you want, I can add an example `unit_test.cpp` file to the repo, or update `CMakeLists.txt` to place sources into `src/` and `tests/` directories and provide an example `main.cpp`.
