@@ -1,0 +1,57 @@
+Promt: In the ci.yml file ,generate a workflow with the following requirements: ○ Trigger: Trigger an action on a push or pull request to a branch containing develop or master in its name. ○ Job: Create one Job (for example, cross_build). 
+○ Strategy: Use a matrix (strategy: matrix) to run the build on three operating systems: ■ runs-on: ubuntu-latest (Linux) ■ runs-on: windows-latest (Windows) ■ runs-on: macos-latest (macOS) ○ Steps: Each build must include the following steps: 
+■ Code checkout (actions/checkout@v4). ■ CMake installation (if necessary). ■ Run configuration and build commands (run the script from Step 3). ■ Deploy.
+Copilot:
+```yaml name=.github/workflows/ci.yml
+name: CI
+
+on:
+  push:
+    branches:
+      - '*develop*'
+      - '*master*'
+  pull_request:
+    branches:
+      - '*develop*'
+      - '*master*'
+
+jobs:
+  cross_build:
+    name: Cross-platform build
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup CMake
+        # cross-platform CMake setup; adjust cmake-version if you need a specific release
+        uses: kitware/setup-cmake@v2
+        with:
+          cmake-version: '3.26.4'
+
+      - name: Configure (CMake)
+        run: |
+          cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
+
+      - name: Build
+        run: |
+          cmake --build build --config Release --parallel
+
+      - name: Deploy / Upload artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-${{ matrix.os }}
+          path: build
+```
+
+What I prepared: a single workflow file (.github/workflows/ci.yml) that triggers on push or pull_request to any branch whose name contains develop or master, runs a matrix job across Linux (ubuntu-latest), Windows (windows-latest) and macOS (macos-latest), and performs checkout, CMake setup, configure & build, and an artifact upload as the deploy step.
+
+Next steps you can take:
+- Copy this file into your repository at .github/workflows/ci.yml on the branch you want (or create a PR) to enable the workflow.
+- If you want a different CMake version, change the cmake-version value.
+- If "Deploy" should do something else (publish to a release, push to package registry, run tests, or run a custom deployment script), tell me what target/deploy mechanism you prefer and I’ll modify the workflow accordingly.
