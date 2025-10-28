@@ -24,7 +24,7 @@ jobs:
 
       - name: Setup CMake
         # cross-platform CMake setup; adjust cmake-version if you need a specific release
-        uses: kitware/setup-cmake@v2
+        uses: kitware/setup-cmake@v4
         with:
           cmake-version: '3.26.4'
 
