@@ -1,132 +1,74 @@
-name: CI/CD Pipeline
+name: Cross-Platform CI/CD
 
-# Trigger on push to branches containing 'develop' or 'master' in their name
 on:
   push:
     branches:
-      - '*develop*'
-      - '*master*'
+      - '**develop**'
+      - '**master**'
   pull_request:
     branches:
-      - '*develop*'
-      - '*master*'
+      - '**develop**'
+      - '**master**'
 
 jobs:
   cross_build:
-    name: Cross Platform Build and Test
     runs-on: ${{ matrix.os }}
-    
     strategy:
       matrix:
-        os: [ubuntu-latest, macos-latest, windows-latest]
-        include:
-          - os: ubuntu-latest
-            cmake_generator: "Unix Makefiles"
-            shell: bash
-          - os: macos-latest
-            cmake_generator: "Unix Makefiles"
-            shell: bash
-          - os: windows-latest
-            cmake_generator: "Visual Studio 17 2022"
-            shell: pwsh
-    
-    defaults:
-      run:
-        shell: ${{ matrix.shell }}
+        os: [ubuntu-latest, windows-latest, macos-latest]
     
     steps:
-      # Step 1: Checkout code
       - name: Checkout code
         uses: actions/checkout@v4
       
-      # Step 2: Install CMake (if needed)
-      - name: Install CMake
-        uses: jwlawson/actions-setup-cmake@v1.13
-        with:
-          cmake-version: '3.16'
+      - name: Install CMake (Ubuntu)
+        if: matrix.os == 'ubuntu-latest'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y cmake
       
-      # Step 3: Install build tools for Windows
-      - name: Install build tools (Windows)
-        if: matrix.os == 'windows-latest'
-        uses: microsoft/setup-msbuild@v1.1
+      - name: Install CMake (macOS)
+        if: matrix.os == 'macos-latest'
+        run: |
+          brew install cmake
       
-      # Step 4: Make ci.sh executable (Unix systems)
-      - name: Make ci.sh executable
-        if: matrix.os != 'windows-latest'
-        run: chmod +x ci.sh
-      
-      # Step 5: Run configuration and building (Unix systems)
-      - name: Run CI script (Unix)
-        if: matrix.os != 'windows-latest'
-        run: ./ci.sh
-      
-      # Step 5: Run configuration and building (Windows)
-      - name: Run CI script (Windows)
+      - name: Install CMake (Windows)
         if: matrix.os == 'windows-latest'
         run: |
-          # Create build directory
-          mkdir -Force build
-          cd build
-          
-          # Generate build files with CMake
-          cmake .. -G "${{ matrix.cmake_generator }}"
-          
-          # Build the project
-          cmake --build . --config Release
-          
-          # Run tests
-          ctest --output-on-failure -C Release
+          choco install cmake --installargs 'ADD_CMAKE_TO_PATH=System'
       
-      # Step 6: Upload build artifacts
-      - name: Upload artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: build-artifacts-${{ matrix.os }}
-          path: |
-            build/bin/
-            build/*.exe
-            build/Release/
-          retention-days: 7
+      - name: Verify CMake installation
+        run: cmake --version
       
-      # Step 7: Deploy (placeholder - customize as needed)
+      - name: Run build script (Windows)
+        if: matrix.os == 'windows-latest'
+        run: |
+          .\ci.bat
+        shell: cmd
+      
+      - name: Run build script (Unix)
+        if: matrix.os != 'windows-latest'
+        run: |
+          chmod +x ci.bat
+          ./ci.bat
+        shell: bash
+      
       - name: Deploy
         run: |
-          echo "🚀 Deployment step for ${{ matrix.os }}"
-          echo "Build completed successfully on ${{ matrix.os }}"
-          echo "Artifacts are ready for deployment"
-
-  # Optional: Create a release if all builds succeed
-  create_release:
-    name: Create Release
-    needs: cross_build
-    runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/master' || contains(github.ref, 'master')
-    
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+          echo "Deploying application for ${{ matrix.os }}"
+          # Add your deployment commands here
+          # For example:
+          # - Upload artifacts
+          # - Deploy to server
+          # - Create release
       
-      - name: Download all artifacts
-        uses: actions/download-artifact@v3
-      
-      - name: Create Release
-        uses: softprops/action-gh-release@v1
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
         with:
-          tag_name: v${{ github.run_number }}
-          name: Release v${{ github.run_number }}
-          body: |
-            🎉 Automated release from CI/CD pipeline
-            
-            Built and tested on:
-            - ✅ Ubuntu Latest
-            - ✅ macOS Latest  
-            - ✅ Windows Latest
-            
-            **Changes in this release:**
-            ${{ github.event.head_commit.message }}
-          files: |
-            build-artifacts-*/*
-          draft: false
-          prerelease: false
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          name: build-${{ matrix.os }}
+          path: |
+            build/
+            bin/
+            *.exe
+            *.app
+          if-no-files-found: warn
