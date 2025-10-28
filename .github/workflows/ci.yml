@@ -124,9 +124,9 @@ jobs:
             🎉 Automated release from CI/CD pipeline
             
             Built and tested on:
-            - ✅ Ubuntu Latest
-            - ✅ macOS Latest  
-            - ✅ Windows Latest
+            -  Ubuntu Latest
+            -  macOS Latest  
+            -  Windows Latest
             
             **Changes in this release:**
             ${{ github.event.head_commit.message }}
