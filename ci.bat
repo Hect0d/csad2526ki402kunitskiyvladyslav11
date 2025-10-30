@@ -1,8 +1,7 @@
 @echo off
 rem CI helper for Windows (batch). Runs configure, build, make build.sh executable and run tests.
-
+rem *** NOW USING MinGW Makefiles instead of NMake ***
 setlocal
-
 echo.
 echo === Create build directory ===
 if not exist "build" (
@@ -10,7 +9,6 @@ if not exist "build" (
 ) else (
     echo build directory already exists
 )
-
 echo.
 echo === Enter build directory ===
 pushd build
@@ -18,16 +16,14 @@ if errorlevel 1 (
     echo Failed to enter build directory.
     exit /b 1
 )
-
 echo.
-echo === Configure project with CMake ===
-cmake ..
+echo === Configure project with CMake (MinGW Makefiles) ===
+cmake -G "MinGW Makefiles" ..
 if errorlevel 1 (
     echo CMake configuration failed.
     popd
     exit /b 1
 )
-
 echo.
 echo === Build project ===
 cmake --build .
@@ -36,7 +32,6 @@ if errorlevel 1 (
     popd
     exit /b 1
 )
-
 echo.
 echo === Grant execution rights to build.sh (if present) ===
 rem We're currently in the build directory; target build.sh in repo root as ..\build.sh
@@ -53,7 +48,7 @@ if %ERRORLEVEL%==0 (
         )
     )
 ) else (
-    rem If chmod isn't available (plain Windows cmd), try PowerShell icacls as a best-effort (note: Windows doesn't use the same exec bit)
+    rem If chmod isn't available (plain Windows cmd), try PowerShell icacls as a best-effort
     where powershell >nul 2>&1
     if %ERRORLEVEL%==0 (
         if exist "..\build.sh" (
@@ -67,10 +62,8 @@ if %ERRORLEVEL%==0 (
         echo Neither chmod nor PowerShell available; skipping permission change.
     )
 )
-
 echo.
 echo === Commit permission change (if any) ===
-rem Move back to repo root to run git commands
 popd
 where git >nul 2>&1
 if %ERRORLEVEL%==0 (
@@ -79,7 +72,6 @@ if %ERRORLEVEL%==0 (
 ) else (
     echo git not found in PATH; skipping git add/commit.
 )
-
 echo.
 echo === Run tests with CTest ===
 pushd build
@@ -94,7 +86,6 @@ if %ERRORLEVEL%==0 (
 ) else (
     echo ctest not found in PATH; skipping tests.
 )
-
 popd
 echo.
 echo === CI script finished successfully ===
