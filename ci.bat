@@ -18,7 +18,7 @@ if errorlevel 1 (
 )
 echo.
 echo === Configure project with CMake (MinGW Makefiles) ===
-cmake -G "MinGW Makefiles" ..
+cmake -G "MinGW Makefiles" -DCMAKE_SH="CMAKE_SH-NOTFOUND" ..
 if errorlevel 1 (
     echo CMake configuration failed.
     popd
