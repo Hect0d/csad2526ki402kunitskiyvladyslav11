@@ -101,7 +101,7 @@ jobs:
             Set-Location build
             
             # Configure with MinGW Makefiles
-            cmake .. -G "${{ matrix.cmake_generator }}" -DCMAKE_C_COMPILER=gcc -DCMAKE_CXX_COMPILER=g++
+            cmake .. -G "${{ matrix.cmake_generator }}" -DCMAKE_SH="CMAKE_SH-NOTFOUND" -DCMAKE_C_COMPILER=gcc -DCMAKE_CXX_COMPILER=g++
             
             if ($LASTEXITCODE -eq 0) {
               echo "CMake configuration successful!"
