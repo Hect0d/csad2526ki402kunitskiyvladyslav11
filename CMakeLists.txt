@@ -44,7 +44,7 @@ enable_testing()
 option(LINK_MATH_LIB_TO_TEST "Link math_operations library into unit_test instead of relying on unit_test to include the implementation" OFF)
 
 add_executable(unit_test
-    unit_test.cpp
+    tests/unit_test.cpp
 )
 
 if(LINK_MATH_LIB_TO_TEST)
